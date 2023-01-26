@@ -26,10 +26,11 @@ elseif (APPLE)
   set(CMAKE_CXX_FLAGS "-Wall -Wno-deprecated-declarations -Wno-reorder-ctor -Wno-unused-function -Wno-unused-variable -g -stdlib=libc++ -std=c++14")
   find_library(GL_LIB OpenGL)
   find_library(GLFW glfw)
+  find_library(GL glew)
   add_definitions(-DAPPLE)
 
   include_directories(/System/Library/Frameworks external/include /usr/local/include)
-  set(CORE ${GLFW} ${GL_LIB})
+  set(CORE ${GLFW} ${GL_LIB} GLEW)
   set(EXECUTABLE_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/bin)
 
 elseif (UNIX)

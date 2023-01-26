@@ -6,12 +6,12 @@
 #include <cmath>
 
 #if ( (defined(__MACH__)) && (defined(__APPLE__)) )
-  #define GLFW_INCLUDE_GLCOREARB
-  #include <GLFW/glfw3.h>
-  #include <OpenGL/gl3ext.h>
+#define GLFW_INCLUDE_GLCOREARB
+#include <GLFW/glfw3.h>
+#include <OpenGL/gl3ext.h>
 #else
-  #include <GL/glew.h>
-  #include <GLFW/glfw3.h>
+#include <GL/glew.h>
+#include <GLFW/glfw3.h>
 #endif
 
 namespace tinygl {
@@ -182,6 +182,17 @@ class Window {
     }
 
     GLuint vboId;
+
+    glGenBuffers(1, &triVboId);
+    glBindBuffer(GL_ARRAY_BUFFER, triVboId);
+    glBufferData(GL_ARRAY_BUFFER, 9 * sizeof(float), primTriangle, GL_DYNAMIC_DRAW);
+
+    glGenVertexArrays(1, &_primTriVao);
+    glBindVertexArray(_primTriVao);
+    glEnableVertexAttribArray(0); // 0 -> activate sending VertexPositions to the active shader
+    glBindBuffer(GL_ARRAY_BUFFER, triVboId); // as a habit -> always bind before setting data
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (GLubyte*)NULL);
+
     glGenBuffers(1, &vboId);
     glBindBuffer(GL_ARRAY_BUFFER, vboId);
     glBufferData(GL_ARRAY_BUFFER, 9 * sizeof(float), triangle, GL_STATIC_DRAW);
@@ -283,8 +294,6 @@ class Window {
     }
   }
 
- protected:
-
   /** @name Draw commands
    */
   ///@{
@@ -316,6 +325,40 @@ class Window {
     glUniform3f(_sizeUniform, width, height, 1);
     glBindVertexArray(_triVao);
     glDrawArrays(GL_TRIANGLES, 0, 3);
+  }
+
+  void primTri(const float (&p1)[2], const float (&p2)[2], const float (&p3)[2]) {
+    primTriangle[0] = p1[0];
+    primTriangle[1] = p1[1];
+    primTriangle[3] = p2[0];
+    primTriangle[4] = p2[1];
+    primTriangle[6] = p3[0];
+    primTriangle[7] = p3[1];
+
+    glBindBuffer(GL_ARRAY_BUFFER, triVboId); // as a habit -> always bind before setting data
+    glBufferData(GL_ARRAY_BUFFER, 9 * sizeof(float), primTriangle, GL_DYNAMIC_DRAW);
+
+    glUniform3f(_posUniform, 0, 0, 0);
+    glUniform3f(_sizeUniform, 1, 1, 1);
+    glBindVertexArray(_primTriVao);
+    glDrawArrays(GL_TRIANGLES, 0, 3);
+  }
+
+  void line(const float (&p1)[2], const float (&p2)[2], const float &width){
+    float dx = p2[0] - p1[0];
+    float dy = p2[1] - p1[1];
+    float length = sqrt(dx*dx + dy*dy);
+    float direction[2] = {dx/length, dy/length};
+    float perp[2] = {-direction[1], direction[0]};
+
+    float tlCorner[2] = {p1[0] + perp[0]*width/2, p1[1] + perp[1]*width/2};
+    float trCorner[2] = {p2[0] + perp[0]*width/2, p2[1] + perp[1]*width/2};
+    float blCorner[2] = {p1[0] - perp[0]*width/2, p1[1] - perp[1]*width/2};
+    float brCorner[2] = {p2[0] - perp[0]*width/2, p2[1] - perp[1]*width/2};
+
+    primTri(blCorner, trCorner, tlCorner);
+    primTri(blCorner, brCorner, trCorner);
+
   }
 
   /**
@@ -592,9 +635,15 @@ class Window {
   float _dt;
   float _lastx, _lasty;
   struct GLFWwindow* _window = 0;
-  GLuint _triVao, _squareVao, _circleVao;
+  GLuint _triVao, _squareVao, _circleVao, _primTriVao;
   GLuint _colorUniform, _sizeUniform, _posUniform;
   const int numTris = 32; // for circles
+  float primTriangle[9] = {
+      1, 1, 0, 
+      1, 1, 0,
+      1, 1, 0 
+  };
+  GLuint triVboId;
 
  protected:
   inline GLFWwindow* window() const { return _window; }
