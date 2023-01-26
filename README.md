@@ -9,7 +9,9 @@ This demo implements a simple drawing program based on a circle brush.
 
 ## Results
 
-TODO: Put images of what you've made here
+![Example 1](example1.png)
+
+![Example 2](example2.png)
 
 ## How to build
 
