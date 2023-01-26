@@ -57,6 +57,8 @@ class CircleButton {
       originalRadius = radius;
     }
     void draw(Window * window) {
+      window->color(1.0f, 1.0f, 1.0f, 1.0f);
+      window->circle(x, y, radius);
       window->color(color.r, color.g, color.b, alpha);
       window->circle(x, y, radius);
     }
@@ -64,6 +66,9 @@ class CircleButton {
       float dx = mx - x;
       float dy = my - y;
       return dx * dx + dy * dy < radius * radius;
+    }
+    void shrink(){
+      radius = originalRadius * 0.5;
     }
     float x;
     float y;
@@ -79,12 +84,11 @@ class MyWindow : public Window {
 
   void setup() override {
     std::cout << "Window size: " << width() << ", " << height() << std::endl;
-    float buttonRadius = 40.0f;
     float x = 50;
     float y = 35;
     for(Color c : palleteColors) {
-      palleteButtons.push_back(CircleButton(x, y, buttonRadius, c, brushAlpha));
-      x += 1.42 * buttonRadius;
+      palleteButtons.push_back(CircleButton(x, y, brushSize, c, brushAlpha));
+      x += 57;
     }
   }
 
@@ -125,13 +129,11 @@ class MyWindow : public Window {
   void keyDown(int key, int mods) {
     if (key == GLFW_KEY_UP) {
       // increase size of circle
-      brushSize = std::min(100.0f, ((float) brushSize * 1.33f));
-      std::cout << "brushSize: " << brushSize << std::endl;
+      brushSize = std::min(55.0f, ((float) brushSize * 1.18f));
     } 
     else if (key == GLFW_KEY_DOWN) {
       // decrease size of circle
-      brushSize = std::max(1.0f, ((float) brushSize * 0.75f));
-      std::cout << "brushSize: " << brushSize << std::endl;
+      brushSize = std::max(1.0f, ((float) brushSize * 0.85f));
     }
     else if (key == GLFW_KEY_LEFT) {
       // decrease alpha
@@ -146,7 +148,7 @@ class MyWindow : public Window {
       strokes = {};
     }
 
-    for(CircleButton b : palleteButtons) {
+    for(CircleButton &b : palleteButtons) {
       b.radius = brushSize;
       b.alpha = brushAlpha;
     }
@@ -184,7 +186,7 @@ class MyWindow : public Window {
   };
   // todo: create member variables for 
   // current circle size
-  float brushSize = 20;
+  float brushSize = 40;
   // current transparency
   float brushAlpha = 1.0f;
   // current color
